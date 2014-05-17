@@ -174,11 +174,11 @@ function addPipe(){
 function touchedPipe () {
    isRunning=false;
    game.time.events.remove(timer);
+  pipes.setAll('body.velocity.x',0);
   
-    player.reset(400, game.world.height - 250);
-    player.kill();
+   
   //  pipes.removeAll(true);
-button.kill();
+
  button = game.add.button(100,300, 'play_button', actionOnClick,button);
  button.fixedToCamera = true;
     //  Add and update the score
@@ -186,19 +186,25 @@ button.kill();
    
 }
 
+function killPipe(obj){
+	obj.kill();
+}
 function jump(pointer) {
-    
+    if(isRunning){
       player.body.velocity.y = -350;
+    }
 
 }
 
 function actionOnClick(but){
-    but.kill()
+	pipes.forEachAlive(killPipe,this);
+    but.kill();
     console.log('button killed'+ button);
    if(!isRunning){
 	timer=game.time.events.loop(2500, addPipe, this);
-	player.revive();
+	  player.reset(400, game.world.height - 250);
 	isRunning=true;
+	 player.body.velocity.y = -350;
 	//player.body.allowGravity=true;
    }
 }
