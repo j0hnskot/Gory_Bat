@@ -17,10 +17,12 @@
 var game = new Phaser.Game(800, 480, Phaser.AUTO, '', { preload: preload, create: create, update: update});
 
 function preload() {
-     game.load.image('play_button', 'assets/play_button.png');
+	 game.scale.scaleMode = Phaser.ScaleManager.EXACT_FIT;
+    game.scale.setScreenSize();
+    game.load.image('play_button', 'assets/play_button.png');
     game.load.image('sky', 'assets/sky.png');
     game.load.image('ground', 'assets/platform.png');
-    game.load.image('star', 'assets/star.png');
+  // game.load.image('star', 'assets/star.png');
     game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
     game.load.image('pipe-top','assets/pipe-top.png');
     game.load.image('pipe-bot','assets/pipe-bot.png');
@@ -39,15 +41,14 @@ var timer
 
 function create() {
   timer=game.time.events.loop(2500, addPipe, this);
-    game.world.setBounds(0, 0, 1300, 360);
+    game.world.setBounds(0, 0, 900, 360);
  
     //  We're going to be using physics, so enable the Arcade Physics system
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
     //  A simple background for our game
     var sky=game.add.sprite(0, 0, 'sky');
-    sky.scale.setTo(2,1);
-
+   
 
     //  The platforms group contains the ground and the 2 ledges we can jump on
     platforms = game.add.group();
@@ -79,7 +80,7 @@ function create() {
  
 
     //  Player physics properties. Give the little guy a slight bounce.
-    player.body.bounce.y = 0.2;
+ //   player.body.bounce.y = 0.2;
     player.body.gravity.y = 1000;
     player.body.collideWorldBounds = true;
 
@@ -96,7 +97,7 @@ function create() {
 scoreText.fixedToCamera = true;
     //  Our controls.
     //cursors = game.input.keyboard.createCursorKeys();
-    game.camera.follow(player);
+//    game.camera.follow(player);
 
    
 
@@ -170,15 +171,15 @@ function addPipe(){
         
     }
 
-function touchedPipe (player, pipe) {
+function touchedPipe () {
+   isRunning=false;
    game.time.events.remove(timer);
-    // Removes the star from the screen
-        //star.kill();
+  
     player.reset(400, game.world.height - 250);
     player.kill();
   //  pipes.removeAll(true);
-    isRunning=false;
- button = game.add.button(100,300, 'play_button', actionOnClick,this);
+button.kill();
+ button = game.add.button(100,300, 'play_button', actionOnClick,button);
  button.fixedToCamera = true;
     //  Add and update the score
   score = -1;
@@ -191,13 +192,15 @@ function jump(pointer) {
 
 }
 
-function actionOnClick(){
-    button.destroy()
-   
- timer=game.time.events.loop(2500, addPipe, this);
-   player.revive();
-    isRunning=true;
-   //player.body.allowGravity=true;
+function actionOnClick(but){
+    but.kill()
+    console.log('button killed'+ button);
+   if(!isRunning){
+	timer=game.time.events.loop(2500, addPipe, this);
+	player.revive();
+	isRunning=true;
+	//player.body.allowGravity=true;
+   }
 }
 </script>
 
