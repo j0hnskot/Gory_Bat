@@ -33,7 +33,8 @@ function preload() {
 
 var isRunning=false;
 var player;
-var platforms;
+//var platforms;
+var ground;
 var scoreWalls;
 var cursors;
 var button;
@@ -55,10 +56,10 @@ jump_sound = game.add.audio('jump');
     var sky=game.add.sprite(0, 0, 'sky');
    
 
-    platforms = game.add.group();
+   // platforms = game.add.group();
     pipes=game.add.group();
     scoreWalls=game.add.group();
-     pipes.enableBody = true;
+  //   pipes.enableBody = true;
     
     pipes.createMultiple(10,'pipe-top');
     scoreWalls.enableBody = true;
@@ -68,11 +69,11 @@ jump_sound = game.add.audio('jump');
     // pipes.setAll('outOfBoundsKill', true);
 
     //  We will enable physics for any object that is created in this group
-    platforms.enableBody = true;
+   // platforms.enableBody = true;
 
         // Here we create the ground.
-    var ground = platforms.create(0, game.world.height - 32, 'ground');
-
+    ground = game.add.sprite(0, game.world.height - 32, 'ground');
+    game.physics.arcade.enable(ground);
     //  Scale it to fit the width of the game (the original sprite is 400x32 in size)
     ground.scale.setTo(2,1);
 
@@ -119,15 +120,15 @@ function update() {
    
    
    game.physics.arcade.overlap(player, scoreWalls, scoreIncr, null, this);
-game.physics.arcade.collide(player, platforms, touchedPipe, null, this);
+game.physics.arcade.collide(player, ground, touchedPipe, null, this);
     game.physics.arcade.collide(player, pipes, touchedPipe, null, this);
 if(isRunning){
    
     if(player.body.velocity.y<0 && player.body.rotation>-20){
-         player.body.rotation+=-2;
+         player.body.rotation+=-4;
  ;
    }else if(player.body.velocity.y>0 && player.body.rotation<20){
-    player.body.rotation+=2;
+    player.body.rotation+=4;
     console.log("fall");
    }
   
@@ -174,12 +175,18 @@ function addPipe(){
         var pipe=pipes.getFirstDead();
 
         pipe.loadTexture('pipe-bot');
-          pipe.body.immovable = true;
+        pipe.reset(800, 400-(140*(y-1)));
+        
+        pipe.scale.setTo(1,1*y);
+        pipe.scale.setTo(-1,1);
+        pipe.anchor.setTo(0.5,0.5);
+        game.physics.arcade.enable(pipe);
+         pipe.body.immovable = true;
+
 
         
       //  pipe.body.angle=180;
-        pipe.reset(800, 400-(140*(y-1)));
-        pipe.scale.setTo(1,1*y);
+        
         //pipe.anchor.setTo(0.5, 0.5);
         pipe.body.velocity.x=-200;
       
@@ -190,9 +197,11 @@ function addPipe(){
         if(x==0){x=1};
         pipe=pipes.getFirstDead();
         pipe.reset(800,0);
+        pipe.scale.setTo(1,x);
+        game.physics.arcade.enable(pipe);
+
         //pipe.scale.setTo(1,2);
         pipe.body.immovable = true;
-        pipe.scale.setTo(1,x);
         pipe.body.velocity.x=-200;
         pipe.checkWorldBounds=true;
         pipe.outOfBoundsKill= true;
@@ -210,7 +219,7 @@ function touchedPipe () {
    isRunning=false;
    spawnTime=2500;
    game.time.events.remove(timer);
-  pipes.setAll('body.velocity.x',0);
+  pipes.setAll('body.velocity.x',0,true);
   scoreWalls.setAll('body.velocity.x',0);
   menu();
    }
@@ -230,6 +239,7 @@ function menu(){
 
 }
 function killPipe(obj){
+  obj.body=null;
 	obj.kill();
 }
 
