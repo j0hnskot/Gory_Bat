@@ -17,107 +17,126 @@
 var game = new Phaser.Game(800, 480, Phaser.AUTO, '', { preload: preload, create: create, update: update});
 
 function preload() {
-     game.load.image('play_button', 'assets/play_button.png');
+	 game.scale.scaleMode = Phaser.ScaleManager.EXACT_FIT;
+    game.scale.setScreenSize();
+    game.load.image('play_button', 'assets/play_button.png');
     game.load.image('sky', 'assets/sky.png');
     game.load.image('ground', 'assets/platform.png');
-    game.load.image('star', 'assets/star.png');
-    game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
+  // game.load.image('star', 'assets/star.png');
+    game.load.image('bird', 'assets/bird.png');
     game.load.image('pipe-top','assets/pipe-top.png');
     game.load.image('pipe-bot','assets/pipe-bot.png');
+     game.load.image('scoreWall','assets/scoreWall.png');
+    game.load.audio('jump', 'assets/jump.ogg'); 
 
 }
 
-var isRunning=true;
+var isRunning=false;
 var player;
 var platforms;
+var scoreWalls;
 var cursors;
 var button;
-
+var jump_sound;
+var newGame=true;
 var score = -1;
 var scoreText;
 var timer
+var spawnTime=2500;
 
 function create() {
-  timer=game.time.events.loop(2500, addPipe, this);
-    game.world.setBounds(0, 0, 1300, 360);
- 
+  //timer=game.time.events.loop(2500, addPipe, this);
+    game.world.setBounds(0, 0, 900, 360);
+jump_sound = game.add.audio('jump');  
     //  We're going to be using physics, so enable the Arcade Physics system
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
     //  A simple background for our game
     var sky=game.add.sprite(0, 0, 'sky');
-    sky.scale.setTo(2,1);
-
+   
 
     //  The platforms group contains the ground and the 2 ledges we can jump on
     platforms = game.add.group();
     pipes=game.add.group();
-
+    scoreWalls=game.add.group();
      pipes.enableBody = true;
+    
     pipes.createMultiple(10,'pipe-top');
-  //  pipes.setAll('checkWorldBounds', true);
+    scoreWalls.enableBody = true;
+    scoreWalls.createMultiple(10);
+
+  //  pipes.setAll('checkWorldBounds', true);-
     // pipes.setAll('outOfBoundsKill', true);
 
     //  We will enable physics for any object that is created in this group
     platforms.enableBody = true;
 
         // Here we create the ground.
-    var ground = platforms.create(0, game.world.height - 64, 'ground');
+    var ground = platforms.create(0, game.world.height - 32, 'ground');
 
     //  Scale it to fit the width of the game (the original sprite is 400x32 in size)
-    ground.scale.setTo(2, 2);
+    ground.scale.setTo(2,1);
 
     //  This stops it from falling away when you jump on it
     ground.body.immovable = true;
 
     // The player and its settings
-    player = game.add.sprite(400, game.world.height - 150, 'dude');
+    player = game.add.sprite(400, game.world.height - 150, 'bird');
 
     //  We need to enable physics on the player
-     player.anchor.setTo(-0.2,0.5);
+     player.anchor.setTo(0.5,0.5);
     game.physics.arcade.enable(player);
  
 
     //  Player physics properties. Give the little guy a slight bounce.
-    player.body.bounce.y = 0.2;
+ //   player.body.bounce.y = 0.2;
     player.body.gravity.y = 1000;
     player.body.collideWorldBounds = true;
 
     //  Our two animations, walking left and right.
-    player.animations.add('left', [0, 1, 2, 3], 10, true);
-    player.animations.add('right', [5, 6, 7, 8], 10, true);
+   // player.animations.add('left', [0, 1, 2, 3], 10, true);
+//player.animations.add('right', [5, 6, 7, 8], 10, true);
 
     //  Finally some stars to collect
   
   
 
     //  The score
- scoreText = game.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+ scoreText = game.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#000' });
 scoreText.fixedToCamera = true;
     //  Our controls.
     //cursors = game.input.keyboard.createCursorKeys();
-    game.camera.follow(player);
+//    game.camera.follow(player);
 
-   
+   menu();
 
 
     
 }
 
 function update() {
-
-
+    // this.game.debug.body(player);
+    // this.game.debug.body(scoreWalls);
+   
+   
+   game.physics.arcade.overlap(player, scoreWalls, scoreIncr, null, this);
+game.physics.arcade.collide(player, platforms, touchedPipe, null, this);
+    game.physics.arcade.collide(player, pipes, touchedPipe, null, this);
 if(isRunning){
    
+    if(player.body.velocity.y<0 && player.body.rotation>-20){
+         player.body.rotation+=-2;
+ ;
+   }else if(player.body.velocity.y>0 && player.body.rotation<20){
+    player.body.rotation+=2;
+    console.log("fall");
+   }
   
 
 game.input.onDown.add(jump, this);
-if(score==-1){
-  scoreText.text = 'Score: 0';  
-}else{
+
 
      scoreText.text = 'Score: ' + score; 
-}
 
 
 
@@ -127,8 +146,16 @@ if(score==-1){
     // game.physics.arcade.collide(stars, platforms);
 
     //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
-    game.physics.arcade.overlap(player, pipes, touchedPipe, null, this);
+
+
+}else{
+    player.body.velocity.x=0;
+    if(newGame){
+
+        player.body.y= game.world.height - 250;
+    }
 }
+
     //  Reset the players velocity (movement)
    
 
@@ -144,16 +171,19 @@ if(score==-1){
 }
 function addPipe(){
       var y= ((Math.random() * 2)+1);    
-       score++;
+      
         var pipe=pipes.getFirstDead();
+
         pipe.loadTexture('pipe-bot');
           pipe.body.immovable = true;
-       
+
+        
       //  pipe.body.angle=180;
         pipe.reset(800, 400-(140*(y-1)));
         pipe.scale.setTo(1,1*y);
-        //pipe.anchor.setTo(50, 70);
+        //pipe.anchor.setTo(0.5, 0.5);
         pipe.body.velocity.x=-200;
+      
         pipe.checkWorldBounds=true;
         pipe.outOfBoundsKill= true;
 
@@ -167,37 +197,73 @@ function addPipe(){
         pipe.body.velocity.x=-200;
         pipe.checkWorldBounds=true;
         pipe.outOfBoundsKill= true;
-        
+        var scoreWall=scoreWalls.getFirstDead();
+        scoreWall.reset(900,0);
+         scoreWall.checkWorldBounds=true;
+        scoreWall.outOfBoundsKill= true;
+            scoreWall.body.velocity.x=-200;
+            scoreWall.scale.y=800;
+           // scoreWall.visible = false
     }
 
-function touchedPipe (player, pipe) {
+function touchedPipe () {
+    if(isRunning){
+   isRunning=false;
+   spawnTime=2500;
    game.time.events.remove(timer);
-    // Removes the star from the screen
-        //star.kill();
-    player.reset(400, game.world.height - 250);
-    player.kill();
+  pipes.setAll('body.velocity.x',0);
+  scoreWalls.setAll('body.velocity.x',0);
+  menu();
+   }
   //  pipes.removeAll(true);
-    isRunning=false;
- button = game.add.button(100,300, 'play_button', actionOnClick,this);
+
+
+   
+}
+
+function menu(){
+
+ button = game.add.button(100,300, 'play_button', actionOnClick,button);
  button.fixedToCamera = true;
     //  Add and update the score
-  score = -1;
-   
+  score = 0;
+  
+
+}
+function killPipe(obj){
+	obj.kill();
+}
+
+function killScoreWall(obj){
+    obj.kill();
 }
 
 function jump(pointer) {
-    
+    if(isRunning){
       player.body.velocity.y = -350;
+   
+      jump_sound.play();  
+    }
 
 }
 
-function actionOnClick(){
-    button.destroy()
+function scoreIncr(player,scoreWall){
+    scoreWall.kill();
+    score++;
+}
+function actionOnClick(but){
+    newGame=false;
+	pipes.forEachAlive(killPipe,this);
+    scoreWalls.forEachAlive(killScoreWall,this);
+    but.kill();
    
- timer=game.time.events.loop(2500, addPipe, this);
-   player.revive();
-    isRunning=true;
-   //player.body.allowGravity=true;
+   if(!isRunning){
+	timer=game.time.events.loop(spawnTime, addPipe, this);
+	  player.reset(400, game.world.height - 250);
+	isRunning=true;
+	 player.body.velocity.y = -350;
+	//player.body.allowGravity=true;
+   }
 }
 </script>
 
