@@ -17,19 +17,15 @@
 var game = new Phaser.Game(400, 480, Phaser.CANVAS, '', { preload: preload, create: create, update: update,render: render});
 
 function preload() {
-// game.scale.scaleMode = Phaser.ScaleManager.EXACT_FIT;
      game.scale.setShowAll();
     game.scale.setScreenSize();
   
     game.load.image('play_button', 'assets/play_button.png');
     game.load.image('sky', 'assets/sky.png');
     game.load.image('ground', 'assets/platform.png');
-  // game.load.image('star', 'assets/star.png');
     game.load.spritesheet('bird', 'assets/birdsheet.png',34,24);
     game.load.image('pipe-top','assets/pipe-top.png');
-    game.load.image('pipe-bot','assets/pipe-bot.png');
-     game.load.image('scoreWall','assets/scoreWall.png');
-    game.load.audio('jump', 'assets/jump.ogg'); 
+    game.load.audio('jump', 'assets/flap.wav'); 
 
 }
 
@@ -186,7 +182,7 @@ function addPipe(){
         //pipe.scale.setTo(-1,1);
    
         game.physics.arcade.enable(pipe);
-       // pipe.body.setSize(50,140,0, 140*y);
+        pipe.body.setSize(50,140,0, 140*y);
         pipe.body.immovable = true;
 
 
@@ -194,7 +190,7 @@ function addPipe(){
       //  pipe.body.angle=180;
         
         //pipe.anchor.setTo(0.5, 0.5);
-        pipe.body.velocity.x=-100;
+        pipe.body.velocity.x=-150;
       
         pipe.checkWorldBounds=true;
         pipe.outOfBoundsKill= true;
@@ -208,14 +204,14 @@ function addPipe(){
 
         //pipe.scale.setTo(1,2);
         pipe.body.immovable = true;
-        pipe.body.velocity.x=-100;
+        pipe.body.velocity.x=-150;
         pipe.checkWorldBounds=true;
         pipe.outOfBoundsKill= true;
         var scoreWall=scoreWalls.getFirstDead();
         scoreWall.reset(460,0);
          scoreWall.checkWorldBounds=true;
         scoreWall.outOfBoundsKill= true;
-            scoreWall.body.velocity.x=-100;
+            scoreWall.body.velocity.x=-150;
             scoreWall.scale.y=800;
            // scoreWall.visible = false
     }
@@ -238,7 +234,8 @@ function touchedPipe () {
 
 function menu(){
 
- button = game.add.button(150,300, 'play_button', actionOnClick,button);
+ button = game.add.button(200,300, 'play_button', actionOnClick,button);
+ button.anchor.setTo(0.5,0.5);
  button.fixedToCamera = true;
     //  Add and update the score
   score = 0;
@@ -261,8 +258,8 @@ function renderBody(obj){
 
 function render(){
 
-    pipes.forEachAlive(renderBody,this);
-    this.game.debug.body(player);
+    // pipes.forEachAlive(renderBody,this);
+    // this.game.debug.body(player);
 }
 
 function jump(pointer) {
