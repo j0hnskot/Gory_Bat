@@ -1,4 +1,3 @@
-flappy_bird_clone
+Gory Bat
 =================
-
-A clone just to learn working with the Phaser engine
+A "Flappy Bird" clone with a touch of Gore. And bats.
