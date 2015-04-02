@@ -27,7 +27,7 @@ module.exports = function (grunt) {
             options: {
               livereload: true
             },
-            files:['**/*.js','**/*.html', '**/*.css']
+            files:['**/*.js','**/*.html', '**/*.css', '**/*.png']
         },
 
         connect : {
@@ -56,8 +56,8 @@ module.exports = function (grunt) {
                     }
                 },
                 files: {
-                    'minified/js/game.js': ['dev/js/lib/config.js/','dev/js/states/Boot.js','dev/js/**/*.js','!dev/**/cocoon.min.js' ,'!dev/**/iap.js','!dev/**/shop.js','!dev/**/jsParser.js'],
-                    'port/js/game.js': ['dev/js/lib/cocoon.min.js','dev/js/lib/phaser.js','dev/js/lib/config.js/','dev/js/states/Boot.js','dev/js/**/*.js', '!dev/**/editor.js']
+                    'minified/js/game.js': ['js/**/*.js']
+									//, 'port/js/game.js': ['dev/js/lib/cocoon.min.js','dev/js/lib/phaser.js','dev/js/lib/config.js/','dev/js/states/Boot.js','dev/js/**/*.js', '!dev/**/editor.js']
 
 
                 }
@@ -79,15 +79,17 @@ module.exports = function (grunt) {
         },
 
         compress: {
-            android: {
+
+
+            minified: {
                 options: {
-                    archive: 'port/port.zip',
+                    archive: 'minified.zip',
                     mode: 'zip'
                 },
                 files: [
                     {
                         src: '**/*',
-                        cwd: 'port/',
+                        cwd: 'minified/',
                         expand: true
                     }
                 ]
@@ -97,88 +99,25 @@ module.exports = function (grunt) {
 
         copy: {
 
-            font: {
-
-                cwd: 'dev/assets/font',
-                src: '*.fnt',
-                dest: 'Font/',
-                rename: function (dest, src) {
-                    return dest + src.replace('.fnt', '.xml');
-                },
-                expand: true
-
-
-            },
-
-
 
 
             main: {
                 files: [
-                    {
-                        cwd: 'dev/',
-                        src: ['assets/**','!assets/mobile/**'],
-                        dest: 'minified/',
-                        expand: true
-            },
+									{
+										cwd: '',
+										src: ['index.html'],
+										dest: 'minified/',
+										expand: true
+									},
 
-                    {
-                        cwd: 'dev/',
-                        src: ['assets/**','!assets/desktop/**'] ,
-                        dest: 'port/',
-                        expand: true
-            },
+									{
 
+										cwd: 'assets/',
+										src: '*',
+										dest: 'minified/assets',
+										expand: true
 
-
-
-            {
-                        cwd: 'dev/js/',
-                        src: 'levels/**',
-                        dest: 'minified/js/',
-                        expand: true
-            },
-
-            {
-
-                cwd: 'dev/js/',
-                src: 'levels/**',
-                dest: 'port/js/',
-                expand: true
-            },
-
-
-
-            {
-                cwd: 'indexFiles/',
-                src: 'indexCocoonJS.html',
-                dest: 'port/',
-                rename: function (dest, src) {
-                    return dest + src.replace('indexCocoonJS', 'index');
-                },
-                expand: true
-            },
-
-
-
-
-            {
-                cwd: 'indexFiles/',
-                src: 'indexWeb.html',
-                dest: 'minified/',
-                rename: function (dest, src) {
-                    return dest + src.replace('indexWeb', 'index');
-                },
-                expand: true
-            },
-
-            {
-                cwd: 'Font/',
-                src: '*.json',
-                dest: 'port/assets/font',
-                expand: true
-            }
-
+									},
 
 
                 ]
@@ -202,8 +141,7 @@ module.exports = function (grunt) {
 
 
     // Define your tasks here
-    grunt.registerTask('default', ['clean', 'copy:font', 'execute', 'uglify:testing', 'copy:main', 'compress']);
-    grunt.registerTask('release', ['clean', 'copy:font', 'execute', 'uglify:release', 'copy:main', 'compress']);
+    grunt.registerTask('default', ['clean',  'uglify:testing', 'copy:main', 'compress']);
     grunt.registerTask('server', ['connect','watch']);
 
 
