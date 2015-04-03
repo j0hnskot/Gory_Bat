@@ -5,7 +5,7 @@
 	/*jslint browser: true*/
 	/*global Phaser, console*/
 
-	var game = new Phaser.Game(320, 480, Phaser.AUTO, '', { preload: preload, create: create, update: update, render: render})
+	var game = new Phaser.Game(320, 480, Phaser.AUTO, 'game', { preload: preload, create: create, update: update, render: render})
 	, bat,	spikes, ground, sky, scoreWalls, playButton, flap_sound, death_sound, scoreText, timer, clickListener, bloodEmitter
 	, preloadSprite, instructionsText, fullScreenButton
 	,	isRunning = false
@@ -49,10 +49,11 @@
 
 	function create() {
 
-		 /** Since the spikes will be spawned outside the screen,
-					the world should be set a bit bigger on the X axis
-		*/
 		preloadSprite.kill();
+
+		/** Since the spikes will be spawned outside the screen,
+		/*	the world should be set a bit bigger on the X axis
+		*/
 		game.world.setBounds(0, 0, 500, 480);
 		game.stage.smoothed = false;
 
@@ -104,11 +105,10 @@
 		playButton = game.add.button(game.width / 2 , game.height / 2 , 'play_button', resetGame);
 		playButton.anchor.setTo(0.5, 0.5);
 
-
 		fullScreenButton = game.add.button(10,  game.height - 30 , 'fullScreenButton', goFull);
 		fullScreenButton.anchor.setTo(0.5, 0.5);
 		fullScreenButton.x = 10 +fullScreenButton.width / 2;
-		fullScreenButton.y = game.height -fullScreenButton.height;
+		fullScreenButton.y = game.height - fullScreenButton.height;
 		fullScreenButton.width = 30;
 		fullScreenButton.height = 30;
 
@@ -135,11 +135,9 @@
 		bloodEmitter.minParticleAlpha = 0.5
 		bloodEmitter.maxParticleAlpha = 0.5
 
-
-
 		clickListener = game.input.onDown.add(clicked);
-
 		resetGame();
+		instructionsText.text='';
 		menu();
 
 	}
@@ -250,7 +248,10 @@
 
 
 		death_sound.play();
-		game.time.events.add(400, menu, this);
+		game.time.events.add(400, function () {
+					instructionsText.text = 'Passed '+score+' before diving to death.';
+					menu();
+		}, this);
 
 	}
 
@@ -330,7 +331,6 @@
 	function menu () {
 
 		playButton.visible = true;
-		instructionsText.text = 'Passed '+score+' before diving to death.';
 
 
 
