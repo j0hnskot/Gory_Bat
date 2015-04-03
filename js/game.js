@@ -383,6 +383,7 @@
 
 	function  animate (entity) {
 
+		if(!game.device.desktop) return;
 
 		entity.startX = entity.x;
 		entity.startY = entity.y;
