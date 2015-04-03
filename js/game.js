@@ -7,7 +7,7 @@
 
 	var game = new Phaser.Game(320, 480, Phaser.AUTO, 'game', { preload: preload, create: create, update: update, render: render})
 	, bat,	spikes, ground, sky, scoreWalls, playButton, flap_sound, death_sound, scoreText, timer, clickListener, bloodEmitter
-	, preloadSprite, instructionsText, fullScreenButton
+	, preloadSprite, instructionsText, fullScreenButton, tweetButton
 	,	isRunning = false
 	,	score = 0
 	,	spawnTime = 1800
@@ -34,6 +34,7 @@
 
 		game.load.image('play_button', 'assets/play_button.png');
 		game.load.image('fullScreenButton', 'assets/fullScreenButton.png');
+		game.load.image('twitterIcon', 'assets/twitter-icon.png');
 		game.load.image('sky', 'assets/background.png');
 		game.load.image('ground', 'assets/ground.png');
 		game.load.atlasJSONHash('bat', 'assets/bat.png', 'assets/bat.js');
@@ -102,8 +103,8 @@
 		ground.body.immovable = true;
 		ground.body.setSize(ground.width, ground.height - 10, 0, 10);
 
-		playButton = game.add.button(game.width / 2 , game.height / 2 , 'play_button', resetGame);
-		playButton.anchor.setTo(0.5, 0.5);
+		playButton = game.add.button(game.width / 2 - 52 , game.height / 2 - 30, 'play_button', resetGame);
+		animate(playButton)
 
 		fullScreenButton = game.add.button(10,  game.height - 30 , 'fullScreenButton', goFull);
 		fullScreenButton.anchor.setTo(0.5, 0.5);
@@ -112,17 +113,23 @@
 		fullScreenButton.width = 30;
 		fullScreenButton.height = 30;
 
+		tweetButton = game.add.button(10, 0, 'twitterIcon', tweet);
+		tweetButton.y = game.height - 60;
+		tweetButton.width = 50;
+		tweetButton.height = 50;
+		animate(tweetButton)
+
 		if (!game.scale.compatibility.supportsFullScreen || game.device.desktop){
 
 			fullScreenButton.visible = false;
 
 		}else{
 
-					game.scale.onFullScreenChange.add(
-						function fullScreenChange (){
-								if(!game.scale.isFullScreen){fullScreenButton.visible = true;}
-						}
-					)
+			game.scale.onFullScreenChange.add(
+				function fullScreenChange (){
+					if(!game.scale.isFullScreen){fullScreenButton.visible = true;}
+				}
+			)
 		}
 
 		bloodEmitter = game.add.emitter(game.world.centerX, 100, 100);
@@ -315,6 +322,7 @@
 			sky.y = sky.startingY;
 
 			playButton.visible = false;
+			tweetButton.visible = false;
 			clickListener.active = true;
 
 	}
@@ -331,8 +339,7 @@
 	function menu () {
 
 		playButton.visible = true;
-
-
+		tweetButton.visible = true;
 
 	}
 
@@ -362,10 +369,58 @@
 
 	function goFull(){
 
-//		if(game.scale.isFullScreen){ game.scale.stopFullScreen(); return}
 		fullScreenButton.visible = false;
 		game.scale.startFullScreen();
 
 	}
+
+	function tweet (){
+
+			var tweetText =  'I just played Gory Bat!';
+			if(score !== 0 ) tweetText = 'I just scored '+ score + ' at Gory Bat!';
+			window.open("https://twitter.com/intent/tweet?text=" + tweetText + " @j0hnskot&url=" + window.location.href, "" ,"width=550, height=425");
+	}
+
+	function  animate (entity) {
+
+
+		entity.startX = entity.x;
+		entity.startY = entity.y;
+		entity.startWidth = entity.width;
+		entity.startHeight = entity.height;
+
+
+		entity.events.onInputDown.add(function (self) {
+
+			self.y += 2;
+			self.x -= 4;
+			self.width += 10;
+		});
+
+		entity.events.onInputUp.add(function (self) {
+
+			self.x = self.startX;
+			self.y = self.startY;
+			self.width = self.startWidth;
+
+		});
+
+		entity.events.onInputOver.add(function (self) {
+
+			self.y += 2;
+			self.x -= 4;
+			self.width += 5;
+
+		});
+
+		entity.events.onInputOut.add(function (self) {
+
+			self.x = self.startX;
+			self.y = self.startY;
+			self.width = self.startWidth;
+
+		});
+
+}
 
 }());
